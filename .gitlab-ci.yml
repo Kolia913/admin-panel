@@ -1,0 +1,23 @@
+stages:
+  - clean
+  - deploy
+
+Clean:
+  stage: clean
+  script:
+    - docker-compose down
+    - docker rmi $(docker images -a -q)
+    - docker system prune -a -f
+  when: manual
+
+Deploy:
+  stage: deploy
+  before_script:
+    - cd /app/deschule/frontend
+    - git fetch origin "${CI_COMMIT_REF_NAME}"
+    - git reset --hard ${CI_COMMIT_SHA}
+    - cp .env.example .env
+  script: docker-compose up -d
+  only:
+    - master
+  when: manual
